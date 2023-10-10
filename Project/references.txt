@@ -1,0 +1,10 @@
+https://archive.physionet.org/physiobank/database/html/mitdbdir/mitdbdir.htm#toc
+
+http://ecg.mit.edu/dbpg/dbu_toc.htm#TOC135
+
+https://www.kaggle.com/datasets/taejoongyoon/mitbit-arrhythmia-database/code
+
+https://arxiv.org/pdf/1805.00794.pdf
+
+https://www.frontiersin.org/articles/10.3389/fncom.2020.564015/full
+
