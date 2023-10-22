@@ -1,8 +1,10 @@
 %% Load data
 
+tic
+
 processed_data = readtable('dataframes\processed_df.csv');
 
-X = table2array(processed_data(1:end, 4:end-2));
+X = [table2array(processed_data(1:end, 4:end-8)), table2array(processed_data(1:end, end-5:end))];
 Y = processed_data.Type; 
 
 % Define a mapping from category strings to numerical values
@@ -13,8 +15,10 @@ Y = cellfun(@(x) category_map(x), Y);
 
 partition = cvpartition(Y, 'KFold', 5, 'Stratify', true);
 
-accuracy_list = [];
-f1score_list = [];
+accuracy_list_init = [];
+f1score_list_init = [];
+recall_list_init = [];
+cm_list_init = [];
 
 for i = 1:5
     train_idx = training(partition, i); % Get the training indices for this fold
@@ -28,6 +32,7 @@ for i = 1:5
     
     opt = genfisOptions('FCMClustering', 'FISType', 'sugeno');
     opt.NumClusters = 5;
+    opt.Verbose = 0;
 
     % Train 0-vs-all model
     Y_train_0 = Y_train;
@@ -89,23 +94,106 @@ for i = 1:5
     Y_pred(:,1) = Y_pred_0 + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
     Y_pred(:,2) = Y_pred_1 + (1-Y_pred_0) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
     Y_pred(:,3) = Y_pred_2 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_3) + (1-Y_pred_4);
-    Y_pred(:,2) = Y_pred_3 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_4);
-    Y_pred(:,3) = Y_pred_4 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3);
+    Y_pred(:,4) = Y_pred_3 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_4);
+    Y_pred(:,5) = Y_pred_4 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3);
 
     Y_pred = Y_pred ./ sum(Y_pred, 2);
     [~, Y_pred_labels] = max(Y_pred, [], 2);
     Y_pred_labels = Y_pred_labels - 1;
 
-    class_report = classperf(Y_test, Y_pred_labels);
+    class_report_init = classperf(Y_test, Y_pred_labels);
 
     % Calculate F1 score
-    f1Score = 2 * (class_report.Sensitivity * class_report.PositivePredictiveValue) / (class_report.Sensitivity + class_report.PositivePredictiveValue);
+    f1Score = 2 * (class_report_init.Sensitivity * class_report_init.PositivePredictiveValue) / (class_report_init.Sensitivity + class_report_init.PositivePredictiveValue);
 
-    % Store accuracies and f1 scores
-    accuracy_list = [accuracy_list, class_report.CorrectRate];
-    f1score_list = [f1score_list, f1Score];
+    % Calculate recall score
+    recall = class_report_init.Sensitivity;
+
+    % Calculate 
+    cm = confusionchart(Y_test,Y_pred_labels);
+
+    % Store score metrics
+    accuracy_list_init = [accuracy_list_init, class_report_init.CorrectRate];
+    f1score_list_init = [f1score_list_init, f1Score];
+    recall_list_init = [recall_list_init, recall];
+    cm_list_init = [cm_list_init, cm];
+
+    % % Check membership functions sigma values
+    % model0 = verifySigma(model0);
+    % model1 = verifySigma(model1);
+    % model2 = verifySigma(model2);
+    % model3 = verifySigma(model3);
+    % model4 = verifySigma(model4);
+    % 
+    % % Tune using ANFIS
+    % [in, out, ~] = getTunableSettings(model0);
+    % anfis0 = tunefis(model0,[in;out],X_train,Y_train_0,tunefisOptions("Method","anfis"));
+    % 
+    % [in, out, ~] = getTunableSettings(model1);
+    % anfis1 = tunefis(model1,[in;out],X_train,Y_train_1,tunefisOptions("Method","anfis"));
+    % 
+    % [in, out, ~] = getTunableSettings(model2);
+    % anfis2 = tunefis(model2,[in;out],X_train,Y_train_2,tunefisOptions("Method","anfis"));
+    % 
+    % [in, out, ~] = getTunableSettings(model3);
+    % anfis3 = tunefis(model3,[in;out],X_train,Y_train_3,tunefisOptions("Method","anfis"));
+    % 
+    % [in, out, ~] = getTunableSettings(model4);
+    % anfis4 = tunefis(model4,[in;out],X_train,Y_train_4,tunefisOptions("Method","anfis"));
+    % 
+    % % Evaluate ANFIS on the test data
+    % Y_pred_0 = evalfis(anfis0, X_test);
+    % Y_pred_0(Y_pred_0<0) = 0;
+    % Y_pred_0(Y_pred_0>1) = 1;
+    % 
+    % Y_pred_1 = evalfis(anfis1, X_test);
+    % Y_pred_1(Y_pred_1<0) = 0;
+    % Y_pred_1(Y_pred_1>1) = 1;
+    % 
+    % Y_pred_2 = evalfis(anfis2, X_test);
+    % Y_pred_2(Y_pred_2<0) = 0;
+    % Y_pred_2(Y_pred_2>1) = 1;
+    % 
+    % Y_pred_3 = evalfis(anfis3, X_test);
+    % Y_pred_3(Y_pred_3<0) = 0;
+    % Y_pred_3(Y_pred_3>1) = 1;
+    % 
+    % Y_pred_4 = evalfis(anfis4, X_test);
+    % Y_pred_4(Y_pred_4<0) = 0;
+    % Y_pred_4(Y_pred_4>1) = 1;
+    % 
+    % Y_pred = zeros(size(Y_test,1),5);
+    % Y_pred(:,1) = Y_pred_0 + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
+    % Y_pred(:,2) = Y_pred_1 + (1-Y_pred_0) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
+    % Y_pred(:,3) = Y_pred_2 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_3) + (1-Y_pred_4);
+    % Y_pred(:,2) = Y_pred_3 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_4);
+    % Y_pred(:,3) = Y_pred_4 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3);
+    % 
+    % Y_pred = Y_pred ./ sum(Y_pred, 2);
+    % [~, Y_pred_labels] = max(Y_pred, [], 2);
+    % Y_pred_labels = Y_pred_labels - 1;
+    % 
+    % class_report_final = classperf(Y_test, Y_pred_labels);
+    % 
+    % % Calculate F1 score
+    % f1Score = 2 * (class_report_final.Sensitivity * class_report_final.PositivePredictiveValue) / (class_report_final.Sensitivity + class_report_final.PositivePredictiveValue);
+    % 
+    % % Calculate recall score
+    % recall = class_report_final.Sensitivity;
+    % 
+    % % Calculate 
+    % cm = confusionchart(Y_test,Y_pred_labels);
+    % 
+    % % Store score metrics
+    % accuracy_list_final = [accuracy_list_final, class_report_init.CorrectRate];
+    % f1score_list_final = [f1score_list_final, f1Score];
+    % recall_list_final = [recall_list_final, recall];
+    % cm_list_final = [cm_list_final, cm];
 
 end
 
-fprintf('Accuracy: %.1f%%\n', mean(accuracy_list)*100);
-fprintf('F1 Score: %.1f%%\n', mean(f1score_list)*100);
+fprintf('\nInitial accuracy: %.1f%%', mean(accuracy_list_init)*100), '\n';
+fprintf('\nInitial f1 score: %.1f%%', mean(f1score_list_init)*100), '\n';
+fprintf('\nInitial recall: %.1f%%', mean(recall_list_init)*100), '\n';
+
+toc
