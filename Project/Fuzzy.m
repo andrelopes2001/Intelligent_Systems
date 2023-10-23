@@ -118,77 +118,77 @@ for i = 1:5
     recall_list_init = [recall_list_init, recall];
     cm_list_init = [cm_list_init, cm];
 
-    % % Check membership functions sigma values
-    % model0 = verifySigma(model0);
-    % model1 = verifySigma(model1);
-    % model2 = verifySigma(model2);
-    % model3 = verifySigma(model3);
-    % model4 = verifySigma(model4);
-    % 
-    % % Tune using ANFIS
-    % [in, out, ~] = getTunableSettings(model0);
-    % anfis0 = tunefis(model0,[in;out],X_train,Y_train_0,tunefisOptions("Method","anfis"));
-    % 
-    % [in, out, ~] = getTunableSettings(model1);
-    % anfis1 = tunefis(model1,[in;out],X_train,Y_train_1,tunefisOptions("Method","anfis"));
-    % 
-    % [in, out, ~] = getTunableSettings(model2);
-    % anfis2 = tunefis(model2,[in;out],X_train,Y_train_2,tunefisOptions("Method","anfis"));
-    % 
-    % [in, out, ~] = getTunableSettings(model3);
-    % anfis3 = tunefis(model3,[in;out],X_train,Y_train_3,tunefisOptions("Method","anfis"));
-    % 
-    % [in, out, ~] = getTunableSettings(model4);
-    % anfis4 = tunefis(model4,[in;out],X_train,Y_train_4,tunefisOptions("Method","anfis"));
-    % 
-    % % Evaluate ANFIS on the test data
-    % Y_pred_0 = evalfis(anfis0, X_test);
-    % Y_pred_0(Y_pred_0<0) = 0;
-    % Y_pred_0(Y_pred_0>1) = 1;
-    % 
-    % Y_pred_1 = evalfis(anfis1, X_test);
-    % Y_pred_1(Y_pred_1<0) = 0;
-    % Y_pred_1(Y_pred_1>1) = 1;
-    % 
-    % Y_pred_2 = evalfis(anfis2, X_test);
-    % Y_pred_2(Y_pred_2<0) = 0;
-    % Y_pred_2(Y_pred_2>1) = 1;
-    % 
-    % Y_pred_3 = evalfis(anfis3, X_test);
-    % Y_pred_3(Y_pred_3<0) = 0;
-    % Y_pred_3(Y_pred_3>1) = 1;
-    % 
-    % Y_pred_4 = evalfis(anfis4, X_test);
-    % Y_pred_4(Y_pred_4<0) = 0;
-    % Y_pred_4(Y_pred_4>1) = 1;
-    % 
-    % Y_pred = zeros(size(Y_test,1),5);
-    % Y_pred(:,1) = Y_pred_0 + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
-    % Y_pred(:,2) = Y_pred_1 + (1-Y_pred_0) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
-    % Y_pred(:,3) = Y_pred_2 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_3) + (1-Y_pred_4);
-    % Y_pred(:,2) = Y_pred_3 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_4);
-    % Y_pred(:,3) = Y_pred_4 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3);
-    % 
-    % Y_pred = Y_pred ./ sum(Y_pred, 2);
-    % [~, Y_pred_labels] = max(Y_pred, [], 2);
-    % Y_pred_labels = Y_pred_labels - 1;
-    % 
-    % class_report_final = classperf(Y_test, Y_pred_labels);
-    % 
-    % % Calculate F1 score
-    % f1Score = 2 * (class_report_final.Sensitivity * class_report_final.PositivePredictiveValue) / (class_report_final.Sensitivity + class_report_final.PositivePredictiveValue);
-    % 
-    % % Calculate recall score
-    % recall = class_report_final.Sensitivity;
-    % 
-    % % Calculate 
-    % cm = confusionchart(Y_test,Y_pred_labels);
-    % 
-    % % Store score metrics
-    % accuracy_list_final = [accuracy_list_final, class_report_init.CorrectRate];
-    % f1score_list_final = [f1score_list_final, f1Score];
-    % recall_list_final = [recall_list_final, recall];
-    % cm_list_final = [cm_list_final, cm];
+    % Check membership functions sigma values
+    model0 = verifySigma(model0);
+    model1 = verifySigma(model1);
+    model2 = verifySigma(model2);
+    model3 = verifySigma(model3);
+    model4 = verifySigma(model4);
+
+    % Tune using ANFIS
+    [in, out, ~] = getTunableSettings(model0);
+    anfis0 = tunefis(model0,[in;out],X_train,Y_train_0,tunefisOptions("Method","anfis"));
+
+    [in, out, ~] = getTunableSettings(model1);
+    anfis1 = tunefis(model1,[in;out],X_train,Y_train_1,tunefisOptions("Method","anfis"));
+
+    [in, out, ~] = getTunableSettings(model2);
+    anfis2 = tunefis(model2,[in;out],X_train,Y_train_2,tunefisOptions("Method","anfis"));
+
+    [in, out, ~] = getTunableSettings(model3);
+    anfis3 = tunefis(model3,[in;out],X_train,Y_train_3,tunefisOptions("Method","anfis"));
+
+    [in, out, ~] = getTunableSettings(model4);
+    anfis4 = tunefis(model4,[in;out],X_train,Y_train_4,tunefisOptions("Method","anfis"));
+
+    % Evaluate ANFIS on the test data
+    Y_pred_0 = evalfis(anfis0, X_test);
+    Y_pred_0(Y_pred_0<0) = 0;
+    Y_pred_0(Y_pred_0>1) = 1;
+
+    Y_pred_1 = evalfis(anfis1, X_test);
+    Y_pred_1(Y_pred_1<0) = 0;
+    Y_pred_1(Y_pred_1>1) = 1;
+
+    Y_pred_2 = evalfis(anfis2, X_test);
+    Y_pred_2(Y_pred_2<0) = 0;
+    Y_pred_2(Y_pred_2>1) = 1;
+
+    Y_pred_3 = evalfis(anfis3, X_test);
+    Y_pred_3(Y_pred_3<0) = 0;
+    Y_pred_3(Y_pred_3>1) = 1;
+
+    Y_pred_4 = evalfis(anfis4, X_test);
+    Y_pred_4(Y_pred_4<0) = 0;
+    Y_pred_4(Y_pred_4>1) = 1;
+
+    Y_pred = zeros(size(Y_test,1),5);
+    Y_pred(:,1) = Y_pred_0 + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
+    Y_pred(:,2) = Y_pred_1 + (1-Y_pred_0) + (1-Y_pred_2) + (1-Y_pred_3) + (1-Y_pred_4);
+    Y_pred(:,3) = Y_pred_2 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_3) + (1-Y_pred_4);
+    Y_pred(:,2) = Y_pred_3 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_4);
+    Y_pred(:,3) = Y_pred_4 + (1-Y_pred_0) + (1-Y_pred_1) + (1-Y_pred_2) + (1-Y_pred_3);
+
+    Y_pred = Y_pred ./ sum(Y_pred, 2);
+    [~, Y_pred_labels] = max(Y_pred, [], 2);
+    Y_pred_labels = Y_pred_labels - 1;
+
+    class_report_final = classperf(Y_test, Y_pred_labels);
+
+    % Calculate F1 score
+    f1Score = 2 * (class_report_final.Sensitivity * class_report_final.PositivePredictiveValue) / (class_report_final.Sensitivity + class_report_final.PositivePredictiveValue);
+
+    % Calculate recall score
+    recall = class_report_final.Sensitivity;
+
+    % Calculate 
+    cm = confusionchart(Y_test,Y_pred_labels);
+
+    % Store score metrics
+    accuracy_list_final = [accuracy_list_final, class_report_init.CorrectRate];
+    f1score_list_final = [f1score_list_final, f1Score];
+    recall_list_final = [recall_list_final, recall];
+    cm_list_final = [cm_list_final, cm];
 
 end
 
