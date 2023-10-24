@@ -18,9 +18,10 @@ category_map = containers.Map({'F', 'N', 'Q', 'S', 'V'}, {0, 1, 2, 3, 4});
 Y_train = cellfun(@(x) category_map(x), Y_train);
 Y_test = cellfun(@(x) category_map(x), Y_test);
 
-accuracy_list_init = [];
-f1score_list_init = [];
 recall_list_init = [];
+f1score_list_init = [];
+mcc_list_init = [];
+kappa_list_init = [];
 cm_list_init = [];
 
 opt = genfisOptions('FCMClustering', 'FISType', 'sugeno');
@@ -96,19 +97,39 @@ Y_pred_labels = Y_pred_labels - 1;
 
 class_report_init = classperf(Y_test, Y_pred_labels);
 
-% Calculate F1 score
-f1Score = 2 * (class_report_init.Sensitivity * class_report_init.PositivePredictiveValue) / (class_report_init.Sensitivity + class_report_init.PositivePredictiveValue);
+sensitivity = class_report_init.Sensitivity;
+specificity = class_report_init.Specificity;
+ppv = class_report_init.PositivePredictiveValue;
 
-% Calculate recall score
-recall = class_report_init.Sensitivity;
+% Calculate Recall
+recall = sensitivity;
 
-% Calculate 
-cm = confusionchart(Y_test,Y_pred_labels);
+% Calculate F1 Score
+f1Score = 2 * (sensitivity * ppv)/(sensitivity + ppv);
+
+% Calculate cm
+cm = confusionmat(Y_test,Y_pred_labels);
+
+% Calculate Cohen's Kappa
+num_class = 5;
+observed_agreement = sum(diag(cm));
+row_totals = sum(cm, 2);
+col_totals = sum(cm, 1);
+expected_agreement = 0;
+for i = 1:num_class
+    expected_agreement = expected_agreement + (row_totals(i)*col_totals(i)) / sum(row_totals);
+end
+kappa = (observed_agreement - expected_agreement) / (sum(row_totals) - expected_agreement);
+ 
+% Calculate Matthews Correlation Coefficient
+mcc = (sensitivity * ppv - sqrt((1 - sensitivity) * (1 - specificity) * sensitivity * (1 - ppv))) / ...
+      sqrt((sensitivity + specificity - sensitivity * specificity) * (sensitivity + ppv - sensitivity * ppv));
 
 % Store score metrics
-accuracy_list_init = [accuracy_list_init, class_report_init.CorrectRate];
 f1score_list_init = [f1score_list_init, f1Score];
 recall_list_init = [recall_list_init, recall];
+mcc_list_init = [mcc_list_init, mcc];
+kappa_list_init = [kappa_list_init, kappa];
 cm_list_init = [cm_list_init, cm];
 
 % % Check membership functions sigma values
@@ -183,9 +204,10 @@ cm_list_init = [cm_list_init, cm];
 % recall_list_final = [recall_list_final, recall];
 % cm_list_final = [cm_list_final, cm];
 
-fprintf('\nInitial accuracy: %.1f%%', mean(accuracy_list_init)*100), '\n';
-fprintf('\nInitial f1 score: %.1f%%', mean(f1score_list_init)*100), '\n';
 fprintf('\nInitial recall: %.1f%%', mean(recall_list_init)*100), '\n';
+fprintf('\nInitial f1 score: %.1f%%', mean(f1score_list_init)*100), '\n';
+fprintf('\nInitial matthews corr coefficient: %.3f%', mean(f1score_list_init)), '\n';
+fprintf('\nInitial Cohens Kappa: %.3f%', mean(kappa_list_init)), '\n';
 fprintf('\n')
 
 toc
